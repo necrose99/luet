@@ -3,17 +3,23 @@ package logger
 import (
 	"fmt"
 	"os"
-	"time"
+
+	. "github.com/mudler/luet/pkg/config"
 
 	"github.com/briandowns/spinner"
 	"github.com/kyokomi/emoji"
 	. "github.com/logrusorgru/aurora"
 )
 
-var s *spinner.Spinner = spinner.New(spinner.CharSets[22], 100*time.Millisecond)
+var s *spinner.Spinner = nil
 
-// TODO: handle this from configuration
-var debug = false
+func NewSpinner() {
+	if s == nil {
+		s = spinner.New(
+			spinner.CharSets[LuetCfg.GetGeneral().SpinnerCharset],
+			LuetCfg.GetGeneral().GetSpinnerMs())
+	}
+}
 
 func Spinner(i int) {
 
@@ -21,7 +27,7 @@ func Spinner(i int) {
 		i = 43
 	}
 
-	if !debug && !s.Active() {
+	if !LuetCfg.GetGeneral().Debug && !s.Active() {
 		//	s.UpdateCharSet(spinner.CharSets[i])
 		s.Start() // Start the spinner
 	}
@@ -30,7 +36,7 @@ func Spinner(i int) {
 func SpinnerText(suffix, prefix string) {
 	s.Lock()
 	defer s.Unlock()
-	if debug {
+	if LuetCfg.GetGeneral().Debug {
 		fmt.Println(fmt.Sprintf("%s %s",
 			Bold(Cyan(prefix)).String(),
 			Bold(Magenta(suffix)).BgBlack().String(),
@@ -42,13 +48,38 @@ func SpinnerText(suffix, prefix string) {
 }
 
 func SpinnerStop() {
-	if !debug {
+	if !LuetCfg.GetGeneral().Debug {
 		s.Stop()
+	}
+}
+
+func level2Number(level string) int {
+	switch level {
+	case "error":
+		return 0
+	case "warning":
+		return 1
+	case "info":
+		return 2
+	default:
+		return 3
 	}
 }
 
 func msg(level string, msg ...interface{}) {
 	var message string
+	var confLevel, msgLevel int
+
+	if LuetCfg.GetGeneral().Debug {
+		confLevel = 3
+	} else {
+		confLevel = level2Number(LuetCfg.GetLogging().Level)
+	}
+	msgLevel = level2Number(level)
+	if msgLevel > confLevel {
+		return
+	}
+
 	for _, m := range msg {
 		message += " " + fmt.Sprintf("%v", m)
 	}

@@ -1,4 +1,5 @@
 // Copyright © 2019 Ettore Di Giacinto <mudler@gentoo.org>
+//                  Daniele Rondina <geaaru@sabayonlinux.org>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,7 +14,7 @@
 // You should have received a copy of the GNU General Public License along
 // with this program; if not, see <http://www.gnu.org/licenses/>.
 
-package helpers_test
+package repository_test
 
 import (
 	"testing"
@@ -28,5 +29,5 @@ import (
 func TestSolver(t *testing.T) {
 	RegisterFailHandler(Fail)
 	LoadConfig(config.LuetCfg)
-	RunSpecs(t, "Helpers Suite")
+	RunSpecs(t, "Repository Suite")
 }
