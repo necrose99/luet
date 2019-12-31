@@ -25,8 +25,8 @@ testRepo() {
     --output $tmpdir/testbuild \
     --packages $tmpdir/testbuild \
     --name "test" \
-    --uri $tmpdir/testrootfs \
-    --type local > /dev/null
+    --urls $tmpdir/testrootfs \
+    --type disk > /dev/null
 
     createst=$?
     assertEquals 'create repo successfully' "$createst" "0"
@@ -36,12 +36,18 @@ testRepo() {
 testInstall() {
     mkdir $tmpdir/testrootfs
     cat <<EOF > $tmpdir/luet.yaml  
-system-repositories: 
-                   - name: "main"
-                     type: "local"
-                     uri: "$tmpdir/testbuild"
+repositories:
+  - name: "Local Repos"
+    type: "disk"
+    priority: 1
+    enable: true
+    path: "$tmpdir/testbuild"
 EOF
-    luet install --config $tmpdir/luet.yaml --system-dbpath $tmpdir/testrootfs --system-target $tmpdir/testrootfs test/c-1.0 > /dev/null
+ls -liah "$tmpdir/testbuild"
+cat $tmpdir/luet.yaml  
+    luet search --config $tmpdir/luet.yaml .
+
+    luet install --config $tmpdir/luet.yaml --system-dbpath $tmpdir/testrootfs --system-target $tmpdir/testrootfs test/c-1.0
     installst=$?
     assertEquals 'install test successfully' "$installst" "0"
     assertTrue 'package installed' "[ -e '$tmpdir/testrootfs/c' ]"
